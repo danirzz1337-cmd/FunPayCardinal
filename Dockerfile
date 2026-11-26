@@ -1,15 +1,7 @@
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
 WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -U -r requirements.txt
-
 COPY . .
+RUN pip install --no-cache-dir -r requirements.txt
 
-VOLUME ["/app/configs", "/app/logs", "/app/storage", "/app/plugins"]
-
-CMD ["python", "main.py"]
+CMD sh -c 'mkdir -p configs && printf "[FunPay]\ngolden_key = %s\nuser_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\nautoRaise = 1\nautoResponse = 1\nautoDelivery = 0\nmultiDelivery = 0\nautoRestore = 0\nautoDisable = 0\noldMsgGetMode = 0\nkeepSentMessagesUnread = 0\n\n[Telegram]\nenabled = 1\ntoken = %s\nsecretKey = %s\nblockLogin = 0\n\n[BlockList]\nblockDelivery = 0\nblockResponse = 0\nblockNewMessageNotification = 0\nblockNewOrderNotification = 0\nblockCommandNotification = 0\n\n[NewMessageView]\nincludeMyMessages = 1\nincludeFPMessages = 1\nincludeBotMessages = 0\nnotifyOnlyMyMessages = 0\nnotifyOnlyFPMessages = 0\nnotifyOnlyBotMessages = 0\nshowImageName = 1\n\n[Greetings]\ncacheInitChats = 0\nignoreSystemMessages = 0\nonlyNewChats = 0\nsendGreetings = 0\ngreetingsText = Привет!\ngreetingsCooldown = 2\n\n[OrderConfirm]\nsendReply = 0\nreplyText = Спасибо за подтверждение!\n\n[ReviewReply]\nsendReply = 0\nstar1Reply = 0\nstar2Reply = 0\nstar3Reply = 0\nstar4Reply = 0\nstar5Reply = 0\nstar1ReplyText =\nstar2ReplyText =\nstar3ReplyText =\nstar4ReplyText =\nstar5ReplyText =\n\n[Proxy]\nenable = 0\nip =\nport =\nlogin =\npassword =\ncheck = 0\n\n[Other]\nwatermark = \nrequestsDelay = 4\nlanguage = ru\n" "$FPC_GOLDEN_KEY" "$FPC_TG_TOKEN" "$FPC_TG_PASSWORD" > configs/_main.cfg && python -m http.server ${PORT:-10000} & python main.py'
